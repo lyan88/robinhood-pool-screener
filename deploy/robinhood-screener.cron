@@ -1,0 +1,12 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+CRON_TZ=UTC
+
+# Robinhood Pool Screener — scan tiap 2 menit. flock mencegah tumpang tindih.
+*/2 * * * * screener cd /opt/robinhood-screener && flock -n /opt/robinhood-screener/locks/scan.lock /usr/bin/python3 scanner.py >> /opt/robinhood-screener/logs/scan.log 2>&1
+
+# Pelacak hasil: catat harga +5m/+30m/+1j/+6j setelah alert.
+*/5 * * * * screener cd /opt/robinhood-screener && flock -n /opt/robinhood-screener/locks/track.lock /usr/bin/python3 track.py >> /opt/robinhood-screener/logs/track.log 2>&1
+
+# Laporan harian ke Telegram (07:00 UTC = 14:00 WIB).
+0 7 * * * screener cd /opt/robinhood-screener && /usr/bin/python3 report.py --telegram >> /opt/robinhood-screener/logs/report.log 2>&1
