@@ -26,7 +26,7 @@ punya mint/freeze authority dan Uniswap v4 memakai position NFT.
 | Market cap / FDV | $8.000 – $100.000 | GeckoTerminal |
 | Likuiditas | ≥ $5.000 | GeckoTerminal |
 | Umur pool | < 60 menit | GeckoTerminal |
-| Unique buyer | ≥ 15 dalam 2 menit | GeckoTerminal trades |
+| Unique buyer | ≥ 15 dalam 5 menit | GeckoTerminal trades |
 
 Semua angka bisa diubah di `.env` (lihat `.env.example`).
 
@@ -50,7 +50,7 @@ Semua angka bisa diubah di `.env` (lihat `.env.example`).
    lalu saldo dijumlahkan dan PoolManager Uniswap v4, alamat pool, serta
    alamat burn dibuang. Ini tidak menunggu indexer.
 5. Hanya kalau lolos semua, ambil daftar trade pool dan hitung **unique
-   wallet** yang membeli dalam 120 detik terakhir. Harga alert diambil dari
+   wallet** yang membeli dalam 300 detik terakhir. Harga alert diambil dari
    trade terakhir yang wajar (bukan snapshot `new_pools` yang bisa tertinggal).
 6. Kalau lolos, alert masuk **antrean berprioritas** lalu dikirim sesuai
    kuota Telegram. Kandidat yang hampir lolos masuk **watchlist** dan

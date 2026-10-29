@@ -108,8 +108,8 @@ MAX_MC_USD = _f("MAX_MC_USD", 100_000)
 TOP10_MAX_PCT = _f("TOP10_MAX_PCT", 35.0)
 MIN_TOP10_HOLDERS = _i("MIN_TOP10_HOLDERS", 10)
 MIN_TOP10_TOTAL_PCT = _f("MIN_TOP10_TOTAL_PCT", 5.0)
-MIN_UNIQUE_BUYERS = _i("MIN_UNIQUE_BUYERS", 15)
-BUYER_WINDOW_SEC = _i("BUYER_WINDOW_SEC", 120)
+MIN_UNIQUE_BUYERS = _i("MIN_UNIQUE_BUYERS", 15)  # Robinhood lebih sepi: pakai jendela 5 menit
+BUYER_WINDOW_SEC = _i("BUYER_WINDOW_SEC", 300)
 
 # ---------------------------------------------------------------- keamanan EVM
 REQUIRE_VERIFIED_CONTRACT = _b("REQUIRE_VERIFIED_CONTRACT", True)
@@ -197,10 +197,10 @@ ALERT_QUEUE_MAX_PRICE_AGE_SEC = _i("ALERT_QUEUE_MAX_PRICE_AGE_SEC", 90)
 # ---------------------------------------------------------------- watchlist
 # Pool Robinhood butuh waktu lebih lama untuk "matang"; watchlist boleh
 # hidup selama sisa umur pool (dibatasi MAX_AGE_SEC).
-WATCH_TTL_SEC = _i("WATCH_TTL_SEC", 1800)
+WATCH_TTL_SEC = _i("WATCH_TTL_SEC", 3600)
 WATCH_INTERVAL_SEC = _i("WATCH_INTERVAL_SEC", 120)
 WATCH_MAX_PER_ROUND = _i("WATCH_MAX_PER_ROUND", 4)
-WATCH_MAX_CHECKS = _i("WATCH_MAX_CHECKS", 8)
+WATCH_MAX_CHECKS = _i("WATCH_MAX_CHECKS", 15)
 WATCH_TOP10_MARGIN_PCT = _f("WATCH_TOP10_MARGIN_PCT", 10.0)
 WATCH_LP_MIN_PCT = _f("WATCH_LP_MIN_PCT", 90.0)
 WATCH_BUYERS_RATIO = _f("WATCH_BUYERS_RATIO", 0.6)
