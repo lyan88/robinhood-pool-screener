@@ -1,0 +1,6 @@
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+CRON_TZ=UTC
+
+# Auto-sync VPS -> GitHub tiap 15 menit. Hanya push kalau unit test lolos.
+*/15 * * * * ubuntu cd /home/ubuntu/robinhood-screener && flock -n /tmp/robinhood-screener-git.lock ./deploy/git-sync.sh >> /home/ubuntu/robinhood-screener-git.log 2>&1
