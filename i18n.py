@@ -65,7 +65,7 @@ STRINGS = {
         "top10": "Top 10: <b>%s</b> (di luar pool/burn)",
         "mc_liq": "MC <b>$%s</b> · Likuiditas <b>$%s</b>",
         "contract": "Kontrak: %s",
-        "tax": "Tax: beli %s / jual %s",
+        "tax": "Pajak: beli %s / jual %s",
         "lp": "LP: <b>%s</b>",
         "price": "Harga: $%s",
         "safe": "aman",

@@ -181,7 +181,7 @@ class TranslationCoverageTests(unittest.TestCase):
 
     def test_no_english_leftover_in_indonesian_alert(self):
         msg = telegram.format_alert(POOL, SEC, BUYERS, lang="id")
-        for word in ("Price:", "Unique buyers", "Contract:", "age "):
+        for word in ("Price:", "Unique buyers", "Contract:", "Tax:", "age "):
             self.assertNotIn(word, msg)
 
 
