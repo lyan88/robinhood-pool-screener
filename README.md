@@ -128,6 +128,22 @@ python3 -m unittest discover -s tests -v        # 83 unit test
 - Screener ini hanya memberi sinyal. Selalu cek kontrak dan pool sendiri
   sebelum membeli.
 
+## Bahasa alert
+
+`ALERT_LANG` di `.env` punya tiga mode:
+
+| Nilai | Hasil di Telegram |
+|---|---|
+| `en` | satu alert bahasa Inggris |
+| `id` | satu alert bahasa Indonesia |
+| `both` | satu pesan berisi blok **EN** lalu **ID**, dipisah garis |
+
+Mode `both` tetap mengirim **satu** pesan (bukan dua notifikasi), jadi kuota
+Telegram tidak terpakai dua kali. Pesan uji (`--test-telegram`) dan laporan
+harian mengikuti mode yang sama. Kalau sebuah alert tertunda dan baru
+dikirim beberapa menit kemudian, banner keterlambatan muncul di kedua blok
+sesuai bahasanya masing-masing.
+
 ## Autosync ke GitHub
 
 VPS ini menyimpan sumber proyek di `/home/ubuntu/robinhood-screener` dan

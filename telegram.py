@@ -110,7 +110,7 @@ def drain_queue(conn, dry_run=None, max_send=None):
         if sent >= max_send:
             break
         delay = max(0, int(time.time()) - int(row["created_at"]))
-        text = _delayed_message(row["message"], delay, lang=config.ALERT_LANG)
+        text = _render(_decode_payload(row["message"]), delay)
         if dry_run:
             print(text)
             print()
@@ -221,7 +221,7 @@ def format_alert(pool, sec, buyers, now=None, lang=None):
             age_text,
         ),
         "",
-        "MC <b>$%s</b> · Liq <b>$%s</b>" % (filters.fmt_usd(mc), filters.fmt_usd(liq)),
+        i18n.text(lang, "mc_liq") % (filters.fmt_usd(mc), filters.fmt_usd(liq)),
         buyers_line,
         i18n.text(lang, "top10") % (
             "%.1f%%" % top10 if top10 is not None else "?"
@@ -250,9 +250,78 @@ def format_alert(pool, sec, buyers, now=None, lang=None):
     return "\n".join(lines)
 
 
-def send_test(lang=None):
-    lang = i18n.normalize(lang or config.ALERT_LANG)
-    text = i18n.text(lang, "test_ready") + "\n" + i18n.text(lang, "test_filter") % (
+DIVIDER = "──────────"
+
+
+def _human_delay(delay_sec):
+    if delay_sec < 60:
+        return "%ds" % int(delay_sec)
+    return "%dm" % max(1, int(delay_sec // 60))
+
+
+def _render(payload, delay_sec=0, mode=None):
+    """
+    Ubah isi antrean menjadi satu pesan siap kirim.
+
+    ``payload`` bisa berupa teks biasa (alert satu bahasa / baris lama di
+    antrean) atau dict {"en": ..., "id": ...} untuk mode both. Setiap blok
+    mendapat banner keterlambatan dalam bahasanya sendiri.
+    """
+    if isinstance(payload, dict):
+        blocks = []
+        for lang in i18n.SUPPORTED:
+            body = payload.get(lang)
+            if not body:
+                continue
+            blocks.append(
+                "<b>%s</b>\n%s"
+                % (lang.upper(), _delayed_message(body, delay_sec, lang=lang))
+            )
+        return ("\n\n" + DIVIDER + "\n\n").join(blocks)
+
+    lang = i18n.normalize_mode(mode or config.ALERT_LANG)
+    if lang == "both":
+        lang = i18n.DEFAULT_LANG
+    return _delayed_message(payload, delay_sec, lang=lang)
+
+
+def format_alert_auto(pool, sec, buyers, now=None, mode=None):
+    """
+    Format sesuai ALERT_LANG. Mode both mengembalikan JSON berisi dua versi
+    supaya antrean tetap satu baris dan hanya satu pesan yang dikirim.
+    """
+    mode = i18n.normalize_mode(mode or config.ALERT_LANG)
+    langs = i18n.langs(mode)
+    if len(langs) == 1:
+        return format_alert(pool, sec, buyers, now=now, lang=langs[0])
+    payload = {
+        lang: format_alert(pool, sec, buyers, now=now, lang=lang) for lang in langs
+    }
+    return json.dumps(payload, ensure_ascii=False)
+
+
+def _decode_payload(message):
+    """Baris antrean lama berisi teks biasa; mode both berisi JSON."""
+    if not isinstance(message, str) or not message.startswith("{"):
+        return message
+    try:
+        data = json.loads(message)
+    except ValueError:
+        return message
+    if isinstance(data, dict) and data and all(
+        isinstance(value, str) for value in data.values()
+    ):
+        return data
+    return message
+
+
+def preview(payload, delay_sec=0):
+    """Teks yang akan benar-benar dikirim, untuk dry-run dan log."""
+    return _render(_decode_payload(payload), delay_sec)
+
+
+def _test_block(lang):
+    return i18n.text(lang, "test_ready") + "\n" + i18n.text(lang, "test_filter") % (
         config.CHAIN_ID,
         config.MAX_OWNER_PCT,
         config.MAX_TAX_PCT,
@@ -262,4 +331,12 @@ def send_test(lang=None):
         config.MAX_AGE_SEC // 60, config.MIN_UNIQUE_BUYERS,
         config.BUYER_WINDOW_SEC,
     )
-    return send(text)
+
+
+def send_test(lang=None):
+    mode = i18n.normalize_mode(lang or config.ALERT_LANG)
+    langs = i18n.langs(mode)
+    if len(langs) == 1:
+        return send(_test_block(langs[0]))
+    blocks = ["<b>%s</b>\n%s" % (l.upper(), _test_block(l)) for l in langs]
+    return send(("\n\n" + DIVIDER + "\n\n").join(blocks))

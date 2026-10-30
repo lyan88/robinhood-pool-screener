@@ -111,6 +111,25 @@ class QueueTests(unittest.TestCase):
         ).fetchone()["alerted_at"]
         self.assertIsNotNone(alerted)
 
+    def test_dual_language_payload_is_one_message(self):
+        import json
+
+        row = _row("Dual")
+        payload = json.dumps({"en": "hello EN", "id": "halo ID"})
+        db.queue_alert(self.conn, row, 7.0, payload)
+        db.upsert_evaluation(self.conn, dict(row, passed=True))
+
+        with mock.patch.object(telegram, "send", return_value=(True, "terkirim")) as send:
+            result = telegram.drain_queue(self.conn)
+
+        self.assertEqual(result["sent"], 1)
+        send.assert_called_once()
+        text = send.call_args[0][0]
+        self.assertIn("hello EN", text)
+        self.assertIn("halo ID", text)
+        self.assertIn("<b>EN</b>", text)
+        self.assertIn("<b>ID</b>", text)
+
     def test_drain_drops_price_when_delayed(self):
         row = _row(price=0.0042)
         db.queue_alert(self.conn, row, 7.0, "later")

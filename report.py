@@ -99,34 +99,44 @@ def _approx_entries(conn, since):
     ).fetchone()[0]
 
 
-def build(hours=None, lang=None):
-    lang = i18n.normalize(lang or config.ALERT_LANG)
+def _gather(hours=None):
     hours = config.REPORT_HOURS if hours is None else hours
     now = int(time.time())
     since = now - hours * 3600
 
     conn = db.connect()
     db.init(conn)
-
-    scans = _scan_totals(conn, since)
-    alert_row = conn.execute(
-        """
-        SELECT COUNT(*) AS n, COUNT(DISTINCT mint) AS mints
-        FROM alerts WHERE created_at >= ?
-        """,
-        (since,),
-    ).fetchone()
-    outcomes = _outcomes(conn, since)
-    pending = _pending(conn, since)
-    approx = _approx_entries(conn, since)
+    data = {
+        "hours": hours,
+        "now": now,
+        "since": since,
+        "scans": _scan_totals(conn, since),
+        "alerts": conn.execute(
+            """
+            SELECT COUNT(*) AS n, COUNT(DISTINCT mint) AS mints
+            FROM alerts WHERE created_at >= ?
+            """,
+            (since,),
+        ).fetchone(),
+        "outcomes": _outcomes(conn, since),
+        "pending": _pending(conn, since),
+        "approx": _approx_entries(conn, since),
+    }
     conn.close()
+    return data
 
+
+def _render(data, lang):
     by_horizon = {}
-    for row in outcomes:
+    for row in data["outcomes"]:
         by_horizon.setdefault(row["horizon_sec"], []).append(row)
 
-    end = datetime.fromtimestamp(now, timezone.utc)
-    start = datetime.fromtimestamp(since, timezone.utc)
+    end = datetime.fromtimestamp(data["now"], timezone.utc)
+    start = datetime.fromtimestamp(data["since"], timezone.utc)
+    scans = data["scans"]
+    alert_row = data["alerts"]
+    outcomes = data["outcomes"]
+
     lines = [
         i18n.text(lang, "report_title"),
         "%s–%s UTC" % (start.strftime("%d %b %H:%M"), end.strftime("%d %b %H:%M")),
@@ -194,11 +204,24 @@ def build(hours=None, lang=None):
 
     lines += [
         "",
-        i18n.text(lang, "report_pending") % pending,
+        i18n.text(lang, "report_pending") % data["pending"],
     ]
-    if approx:
-        lines.append(i18n.text(lang, "report_approx") % approx)
+    if data["approx"]:
+        lines.append(i18n.text(lang, "report_approx") % data["approx"])
     return "\n".join(lines)
+
+
+def build(hours=None, lang=None):
+    """Laporan satu bahasa, atau blok EN + ID kalau ALERT_LANG=both."""
+    mode = i18n.normalize_mode(lang or config.ALERT_LANG)
+    data = _gather(hours)
+    langs = i18n.langs(mode)
+    if len(langs) == 1:
+        return _render(data, langs[0])
+    return ("\n\n" + telegram.DIVIDER + "\n\n").join(
+        "<b>%s</b>\n%s" % (l.upper(), _render(data, l)) for l in langs
+    )
+
 
 
 def main(argv=None):

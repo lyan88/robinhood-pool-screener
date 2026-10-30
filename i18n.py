@@ -3,6 +3,8 @@
 
 DEFAULT_LANG = "en"
 SUPPORTED = ("en", "id")
+# "both" bukan bahasa, tapi mode tampilan: satu alert berisi blok EN lalu ID.
+MODES = SUPPORTED + ("both",)
 
 STRINGS = {
     "en": {
@@ -12,6 +14,7 @@ STRINGS = {
             "(%(buys)d buys / %(sells)d sells)"
         ),
         "top10": "Top 10: <b>%s</b> (excl. pool/burn)",
+        "mc_liq": "MC <b>$%s</b> · Liq <b>$%s</b>",
         "contract": "Contract: %s",
         "tax": "Tax: buy %s / sell %s",
         "lp": "LP: <b>%s</b>",
@@ -60,6 +63,7 @@ STRINGS = {
             "(%(buys)d beli / %(sells)d jual)"
         ),
         "top10": "Top 10: <b>%s</b> (di luar pool/burn)",
+        "mc_liq": "MC <b>$%s</b> · Likuiditas <b>$%s</b>",
         "contract": "Kontrak: %s",
         "tax": "Tax: beli %s / jual %s",
         "lp": "LP: <b>%s</b>",
@@ -105,8 +109,21 @@ STRINGS = {
 
 
 def normalize(lang):
+    """Bahasa konkret untuk memilih teks. "both" bukan bahasa -> en."""
     lang = (lang or DEFAULT_LANG).strip().lower()
     return lang if lang in SUPPORTED else DEFAULT_LANG
+
+
+def normalize_mode(mode):
+    """Mode tampilan: en, id, atau both."""
+    mode = (mode or DEFAULT_LANG).strip().lower()
+    return mode if mode in MODES else DEFAULT_LANG
+
+
+def langs(mode):
+    """Daftar bahasa yang harus dirender untuk satu mode."""
+    mode = normalize_mode(mode)
+    return SUPPORTED if mode == "both" else (mode,)
 
 
 def text(lang, key):

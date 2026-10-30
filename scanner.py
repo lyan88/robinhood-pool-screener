@@ -171,10 +171,10 @@ def _evaluate_pool(conn, pool, now, verbose=False):
 
 
 def _queue_or_print(conn, pool, row, sec, buyer_stats, dry_run, stats):
-    message = telegram.format_alert(pool, sec, buyer_stats)
+    message = telegram.format_alert_auto(pool, sec, buyer_stats)
     if dry_run:
         log("  LOLOS %s — dry-run, tidak dikirim" % (pool.get("symbol") or "?"))
-        print(message)
+        print(telegram.preview(message))
         print()
         return
 

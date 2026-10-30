@@ -7,6 +7,7 @@ import unittest
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import config  # noqa: E402
 import i18n  # noqa: E402
 import telegram  # noqa: E402
 
@@ -119,6 +120,7 @@ class IndonesianAlertTests(unittest.TestCase):
         }
         msg = telegram.format_alert(POOL, sec, BUYERS, lang="id")
         self.assertIn("umur 4m12s", msg)
+        self.assertIn("MC <b>$74.5k</b> · Likuiditas <b>$22.1k</b>", msg)
         self.assertIn("Buyer unik 120s: <b>23</b> (31 beli / 4 jual)", msg)
         self.assertIn("Top 10: <b>22.5%</b> (di luar pool/burn)", msg)
         self.assertIn("Kontrak: honeypot aman", msg)
@@ -143,10 +145,97 @@ class LanguageNormalizationTests(unittest.TestCase):
         self.assertEqual(i18n.normalize("xx"), "en")
         self.assertEqual(i18n.normalize(None), "en")
 
+    def test_modes(self):
+        self.assertEqual(i18n.normalize_mode("both"), "both")
+        self.assertEqual(i18n.normalize_mode("ID"), "id")
+        self.assertEqual(i18n.normalize_mode("xx"), "en")
+        self.assertEqual(i18n.langs("both"), ("en", "id"))
+        self.assertEqual(i18n.langs("id"), ("id",))
+        # "both" bukan bahasa konkret: teks jatuh ke default, bukan error.
+        self.assertEqual(i18n.normalize("both"), "en")
+
     def test_status_labels(self):
         self.assertEqual(i18n.status_label("en", "unlocked"), "open")
         self.assertEqual(i18n.status_label("id", "unlocked"), "terbuka")
         self.assertEqual(i18n.status_label("en", "weird"), "weird")
+
+
+class TranslationCoverageTests(unittest.TestCase):
+    def test_every_key_exists_in_both_languages(self):
+        en = set(i18n.STRINGS["en"])
+        id_ = set(i18n.STRINGS["id"])
+        self.assertEqual(en - id_, set(), "key hanya ada di EN: %s" % (en - id_))
+        self.assertEqual(id_ - en, set(), "key hanya ada di ID: %s" % (id_ - en))
+
+    def test_placeholders_match_between_languages(self):
+        import re
+
+        pattern = re.compile(r"%\([a-z_]+\)[sd]|%[sdf]|%%")
+        for key, en_text in i18n.STRINGS["en"].items():
+            id_text = i18n.STRINGS["id"][key]
+            self.assertEqual(
+                sorted(pattern.findall(en_text)),
+                sorted(pattern.findall(id_text)),
+                "placeholder %s tidak sama" % key,
+            )
+
+    def test_no_english_leftover_in_indonesian_alert(self):
+        msg = telegram.format_alert(POOL, SEC, BUYERS, lang="id")
+        for word in ("Price:", "Unique buyers", "Contract:", "age "):
+            self.assertNotIn(word, msg)
+
+
+class DualLanguageTests(unittest.TestCase):
+    def setUp(self):
+        self._old = config.ALERT_LANG
+        config.ALERT_LANG = "both"
+        self.addCleanup(setattr, config, "ALERT_LANG", self._old)
+
+    def test_auto_returns_both_versions(self):
+        import json
+
+        payload = telegram.format_alert_auto(POOL, SEC, BUYERS)
+        data = json.loads(payload)
+        self.assertEqual(set(data), {"en", "id"})
+        self.assertEqual(data["en"], telegram.format_alert(POOL, SEC, BUYERS, lang="en"))
+        self.assertEqual(data["id"], telegram.format_alert(POOL, SEC, BUYERS, lang="id"))
+
+    def test_single_message_contains_both_blocks(self):
+        import json
+
+        payload = json.loads(telegram.format_alert_auto(POOL, SEC, BUYERS))
+        text = telegram._render(payload, 45)
+        self.assertIn("<b>EN</b>", text)
+        self.assertIn("<b>ID</b>", text)
+        self.assertIn(telegram.DIVIDER, text)
+        # Banner keterlambatan ikut bahasa masing-masing blok.
+        self.assertIn("Delayed 45s", text)
+        self.assertIn("Tertunda 45s", text)
+        self.assertIn("Price:", text)
+        self.assertIn("Harga:", text)
+        self.assertNotIn("e-0", text)
+
+    def test_plain_queue_row_from_before_is_still_sent(self):
+        text = telegram._render("pesan lama", 0)
+        self.assertEqual(text, "pesan lama")
+
+    def test_test_message_is_dual(self):
+        from unittest import mock
+
+        with mock.patch.object(telegram, "send", return_value=(True, "ok")) as sent:
+            telegram.send_test()
+        text = sent.call_args[0][0]
+        self.assertIn("<b>EN</b>", text)
+        self.assertIn("<b>ID</b>", text)
+        self.assertIn("Robinhood Pool Screener is ready", text)
+        self.assertIn("Robinhood Pool Screener siap", text)
+
+    def test_single_language_mode_stays_plain(self):
+        config.ALERT_LANG = "id"
+        payload = telegram.format_alert_auto(POOL, SEC, BUYERS)
+        self.assertIsInstance(payload, str)
+        self.assertIn("Harga:", payload)
+        self.assertNotIn("<b>ID</b>", telegram._render(payload, 0))
 
 
 if __name__ == "__main__":
