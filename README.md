@@ -128,6 +128,28 @@ python3 -m unittest discover -s tests -v        # 83 unit test
 - Screener ini hanya memberi sinyal. Selalu cek kontrak dan pool sendiri
   sebelum membeli.
 
+## Autosync ke GitHub
+
+VPS ini menyimpan sumber proyek di `/home/ubuntu/robinhood-screener` dan
+menjalankan `deploy/git-sync.sh` tiap 15 menit lewat
+`/etc/cron.d/robinhood-screener-git`. Skrip itu hanya commit + push kalau:
+
+1. ada perubahan (termasuk file baru),
+2. **83 unit test lulus**,
+3. tidak ada `.env`, `*.db`, atau `data/` yang ter-track.
+
+Folder produksi `/opt/robinhood-screener` tidak pernah ikut disinkronkan, jadi
+token Telegram dan database tetap hanya ada di VPS.
+
+Pasang sendiri:
+
+```bash
+sudo install -m 0644 deploy/robinhood-screener-git.cron /etc/cron.d/robinhood-screener-git
+./deploy/git-sync.sh        # uji manual
+```
+
+Log: `/home/ubuntu/robinhood-screener-git.log`.
+
 ## Lisensi
 
 MIT — lihat `LICENSE`.
