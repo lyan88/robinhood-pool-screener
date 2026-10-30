@@ -130,15 +130,16 @@ python3 -m unittest discover -s tests -v        # 83 unit test
 
 ## Bahasa alert
 
-`ALERT_LANG` di `.env` punya tiga mode:
+Bahasa dipilih lewat `ALERT_LANG` di `.env`. Kalau variabel ini kosong, kode
+memakai bahasa Inggris (`en`).
 
 Alert selalu **satu bahasa** per pesan. Screener-nya sendiri tersedia dalam
 dua bahasa, dipilih lewat `.env`:
 
 | Nilai | Hasil di Telegram |
 |---|---|
-| `id` | alert bahasa Indonesia (dipakai di produksi) |
-| `en` | alert bahasa Inggris |
+| `en` | alert bahasa Inggris (dipakai di produksi, juga default kode) |
+| `id` | alert bahasa Indonesia |
 
 Pesan uji (`--test-telegram`) dan laporan harian mengikuti pilihan yang sama,
 termasuk banner keterlambatan kalau alert baru terkirim beberapa menit
