@@ -247,18 +247,19 @@ class LpTests(unittest.TestCase):
 
 class BuyersTests(unittest.TestCase):
     def test_enough_unique_buyers(self):
+        count = config.MIN_UNIQUE_BUYERS
         ok, detail, stats = filters.check_buyers_window(
-            make_trades(20), NOW, created_at=NOW - timedelta(seconds=300)
+            make_trades(count), NOW, created_at=NOW - timedelta(seconds=300)
         )
         self.assertTrue(ok, detail)
-        self.assertEqual(stats["buyers"], 20)
+        self.assertEqual(stats["buyers"], count)
 
     def test_sells_do_not_count_as_buyers(self):
-        trades = make_trades(10) + make_trades(10, kind="sell")
+        trades = make_trades(5) + make_trades(5, kind="sell")
         ok, _detail, stats = filters.check_buyers_window(trades, NOW)
         self.assertFalse(ok)
-        self.assertEqual(stats["buyers"], 10)
-        self.assertEqual(stats["sells"], 10)
+        self.assertEqual(stats["buyers"], 5)
+        self.assertEqual(stats["sells"], 5)
 
     def test_old_trades_are_ignored(self):
         ok, _detail, _stats = filters.check_buyers_window(

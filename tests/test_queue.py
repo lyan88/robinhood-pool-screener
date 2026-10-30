@@ -245,7 +245,12 @@ class ScoringTests(unittest.TestCase):
         )
         self.assertFalse(
             filters.near_miss(
-                {"reasons": ["buyers"], "buyers2": config.MIN_UNIQUE_BUYERS - 10}
+                {
+                    "reasons": ["buyers"],
+                    "buyers2": int(
+                        config.MIN_UNIQUE_BUYERS * config.WATCH_BUYERS_RATIO
+                    ) - 1,
+                }
             )
         )
         self.assertTrue(filters.near_miss({"reasons": ["trades_unavailable"]}))

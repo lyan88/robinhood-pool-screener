@@ -21,12 +21,12 @@ punya mint/freeze authority dan Uniswap v4 memakai position NFT.
 | Owner holding | < 10% | GoPlus (balance / total supply) |
 | Creator holding | < 10% | GoPlus |
 | Buy/sell tax | ≤ 5% dan tidak bisa diubah | GoPlus |
-| Top 10 holder | < 35% (di luar PoolManager v4, pool, dan burn; minimal 10 holder dan 5% supply) | RPC `eth_getLogs` |
+| Top 10 holder | < 30% (di luar PoolManager v4, pool, dan burn; minimal 10 holder dan 5% supply) | RPC `eth_getLogs` |
 | LP burned / locked | ≥ 99% kalau diketahui | GoPlus / cek burn pool v2 |
 | Market cap / FDV | $8.000 – $100.000 | GeckoTerminal |
 | Likuiditas | ≥ $5.000 | GeckoTerminal |
 | Umur pool | < 60 menit | GeckoTerminal |
-| Unique buyer | ≥ 15 dalam 5 menit | GeckoTerminal trades |
+| Unique buyer | ≥ 30 dalam 5 menit | GeckoTerminal trades |
 
 Semua angka bisa diubah di `.env` (lihat `.env.example`).
 

@@ -105,10 +105,14 @@ MIN_AGE_SEC = _i("MIN_AGE_SEC", 0)
 MIN_LIQ_USD = _f("MIN_LIQ_USD", 5_000)
 MIN_MC_USD = _f("MIN_MC_USD", 8_000)
 MAX_MC_USD = _f("MAX_MC_USD", 100_000)
-TOP10_MAX_PCT = _f("TOP10_MAX_PCT", 35.0)
+# 30 (bukan 35) berdasarkan 89 alert pertama: volume turun 8%, tapi hanya
+# 3 dari 39 pemenang yang ikut terbuang.
+TOP10_MAX_PCT = _f("TOP10_MAX_PCT", 30.0)
 MIN_TOP10_HOLDERS = _i("MIN_TOP10_HOLDERS", 10)
 MIN_TOP10_TOTAL_PCT = _f("MIN_TOP10_TOTAL_PCT", 5.0)
-MIN_UNIQUE_BUYERS = _i("MIN_UNIQUE_BUYERS", 15)  # Robinhood lebih sepi: pakai jendela 5 menit
+# Robinhood lebih sepi daripada Solana: pakai jendela 5 menit. 30 buyer
+# menyaring 8 alert rugi dan hanya membuang 3 pemenang (data 89 alert).
+MIN_UNIQUE_BUYERS = _i("MIN_UNIQUE_BUYERS", 30)
 BUYER_WINDOW_SEC = _i("BUYER_WINDOW_SEC", 300)
 
 # ---------------------------------------------------------------- keamanan EVM
