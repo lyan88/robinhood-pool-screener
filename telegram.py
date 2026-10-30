@@ -187,6 +187,18 @@ def _contract_line(lang, details):
     return i18n.text(lang, "contract") % _e(head)
 
 
+def _tax_line(lang, details):
+    """
+    Baris pajak. GoPlus mengirim string kosong untuk sebagian pool di chain
+    ini, jadi "beli ? / jual ?" menyesatkan — tulis terus terang tidak diketahui.
+    """
+    buy_tax = details.get("buy_tax")
+    sell_tax = details.get("sell_tax")
+    if buy_tax is None and sell_tax is None:
+        return i18n.text(lang, "tax_unknown")
+    return i18n.text(lang, "tax") % (_num(buy_tax), _num(sell_tax))
+
+
 def format_alert(pool, sec, buyers, now=None, lang=None):
     lang = i18n.normalize(lang or config.ALERT_LANG)
     now = now or datetime.now(timezone.utc)
@@ -227,9 +239,7 @@ def format_alert(pool, sec, buyers, now=None, lang=None):
             "%.1f%%" % top10 if top10 is not None else "?"
         ),
         _contract_line(lang, details),
-        i18n.text(lang, "tax") % (
-            _num(details.get("buy_tax")), _num(details.get("sell_tax"))
-        ),
+        _tax_line(lang, details),
         i18n.text(lang, "lp") % _e(lp_text),
         "",
         i18n.text(lang, "price") % _e(filters.fmt_price(pool.get("price_usd"))),

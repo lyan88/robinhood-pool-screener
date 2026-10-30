@@ -77,6 +77,23 @@ class EnglishAlertTests(unittest.TestCase):
         self.assertIn("Tax: buy 10 / sell 12", msg)
         self.assertIn("LP: <b>unknown</b>", msg)
 
+    def test_unknown_tax_says_so_instead_of_question_marks(self):
+        sec = {
+            "top10_pct": 10.0,
+            "details": {"lp_status": "unknown", "buy_tax": None, "sell_tax": None},
+        }
+        msg = telegram.format_alert(POOL, sec, BUYERS, lang="en")
+        self.assertIn("Tax: unknown", msg)
+        self.assertNotIn("buy ?", msg)
+
+    def test_half_known_tax_still_shows_both_sides(self):
+        sec = {
+            "top10_pct": 10.0,
+            "details": {"lp_status": "unknown", "buy_tax": 5.0, "sell_tax": None},
+        }
+        msg = telegram.format_alert(POOL, sec, BUYERS, lang="en")
+        self.assertIn("Tax: buy 5 / sell ?", msg)
+
     def test_unknown_security_never_claims_clear(self):
         sec = {"top10_pct": 10.0, "details": {"lp_status": "unknown"}}
         msg = telegram.format_alert(POOL, sec, BUYERS, lang="en")
@@ -126,6 +143,14 @@ class IndonesianAlertTests(unittest.TestCase):
         self.assertIn("Kontrak: honeypot aman", msg)
         self.assertIn("LP: <b>terbuka 12.5%</b>", msg)
         self.assertIn("Harga: $0.00000409517", msg)
+
+    def test_unknown_tax_is_indonesian(self):
+        sec = {
+            "top10_pct": 22.5,
+            "details": {"lp_status": "unknown", "buy_tax": None, "sell_tax": None},
+        }
+        msg = telegram.format_alert(POOL, sec, BUYERS, lang="id")
+        self.assertIn("Pajak: tidak diketahui", msg)
 
     def test_indonesian_unknown_and_delay_banner(self):
         sec = {"top10_pct": 10.0, "details": {"lp_status": "unknown"}}
