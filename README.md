@@ -64,7 +64,7 @@ Semua angka bisa diubah di `.env` (lihat `.env.example`).
 | Trade & OHLCV | GeckoTerminal | `/pools/{addr}/trades`, `/ohlcv/...` |
 | Keamanan kontrak | GoPlus | `/token_security/4663?contract_addresses=...` |
 | Holder & supply | RPC Robinhood | `eth_getLogs`, `eth_call` |
-| Harga/likuiditas cadangan | DexScreener | `/latest/dex/tokens/{ca}` |
+| Tautan cek manual | DexScreener | hanya link di alert, tidak dipakai sebagai data |
 
 Blockscout (`robinhoodchain.blockscout.com`) berada di belakang Cloudflare
 dan sering menolak permintaan dari VPS, jadi tidak dipakai sebagai sumber
