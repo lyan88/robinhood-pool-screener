@@ -132,17 +132,20 @@ python3 -m unittest discover -s tests -v        # 83 unit test
 
 `ALERT_LANG` di `.env` punya tiga mode:
 
+Alert selalu **satu bahasa** per pesan. Screener-nya sendiri tersedia dalam
+dua bahasa, dipilih lewat `.env`:
+
 | Nilai | Hasil di Telegram |
 |---|---|
-| `en` | satu alert bahasa Inggris |
-| `id` | satu alert bahasa Indonesia |
-| `both` | satu pesan berisi blok **EN** lalu **ID**, dipisah garis |
+| `id` | alert bahasa Indonesia (dipakai di produksi) |
+| `en` | alert bahasa Inggris |
 
-Mode `both` tetap mengirim **satu** pesan (bukan dua notifikasi), jadi kuota
-Telegram tidak terpakai dua kali. Pesan uji (`--test-telegram`) dan laporan
-harian mengikuti mode yang sama. Kalau sebuah alert tertunda dan baru
-dikirim beberapa menit kemudian, banner keterlambatan muncul di kedua blok
-sesuai bahasanya masing-masing.
+Pesan uji (`--test-telegram`) dan laporan harian mengikuti pilihan yang sama,
+termasuk banner keterlambatan kalau alert baru terkirim beberapa menit
+kemudian.
+
+> Nilai `both` masih tersedia di kode untuk uji tampilan dua bahasa sekaligus,
+> tapi tidak dipakai di produksi karena alert seharusnya satu bahasa.
 
 ## Autosync ke GitHub
 
