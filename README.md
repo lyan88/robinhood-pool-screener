@@ -148,6 +148,31 @@ kemudian.
 > Nilai `both` masih tersedia di kode untuk uji tampilan dua bahasa sekaligus,
 > tapi tidak dipakai di produksi karena alert seharusnya satu bahasa.
 
+## Agent roadmap harian
+
+`ROADMAP.md` berisi daftar pekerjaan yang dikerjakan otomatis, satu item per
+hari pukul **09:00 WIB** (02:00 UTC) oleh `deploy/agent-daily.sh`.
+
+Alurnya:
+
+1. ambil item `- [ ]` pertama di `ROADMAP.md`;
+2. jalankan `opencode run` (model gratis) dengan `deploy/agent-prompt.md`;
+3. jalankan seluruh unit test — **gagal berarti semua perubahan dibuang**;
+4. centang item, commit, push ke `main`;
+5. rsync ke `/opt/robinhood-screener`, jalankan `doctor.py`;
+6. kalau doctor gagal dua kali, commit di-revert dan kode produksi
+   dikembalikan ke versi sebelumnya;
+7. hasilnya dikirim ke Telegram (berhasil maupun gagal).
+
+Coba tanpa memanggil model:
+
+```
+deploy/agent-daily.sh --dry-run
+```
+
+Log lengkap ada di `logs/agent.log`. Agent tidak boleh menyentuh `.env`,
+`data/`, atau melakukan commit sendiri — skrip yang melakukannya.
+
 ## Autosync ke GitHub
 
 VPS ini menyimpan sumber proyek di `/home/ubuntu/robinhood-screener` dan
